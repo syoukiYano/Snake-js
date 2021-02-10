@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<body>    
+<script>
+    const canvas = document.createElement('canvas');    
+    const ctx = canvas.getContext('2d');
+    canvas.width = 400;
+    canvas.height = 400;
+    canvas.setAttribute('style','display: block; margin:auto;background-color: #ddd;')
+    document.body.append(canvas);
+    let START = false;
+    let S
+    document.addEventListener('keydown',function(e){
+        if (!START) {
+            
+            if(e.key === 'Enter'){
+                START = true;
+                draw(ctx);
+            }
+            return;
+        };
+    });
+    draw(ctx);
+
+    const snekeGame = () =>{
+        const p = document.createElement('p');
+        p.setAttribute('style', 'text-align:center;margin: 0;font-size:40px;')
+        let score = null;
+        p.textContent = "score : 0";
+        document.body.append(p);
+
+        const GRID = 20;
+        const STAGE = canvas.width / GRID;
+        const snake = {
+            x: null,
+            y: null,
+            dx: 1,
+            dy: 0,
+            tail: null,
+
+            update: function () {
+                this.body.push({ x: this.x, y: this.y });
+                this.x += this.dx;
+                this.y += this.dy;
+                ctx.fillStyle = 'green';
+                let i = 0;
+                this.body.forEach((obj) => {   
+                    i++
+                    if (this.body.length === i) {
+                        ctx.fillStyle = 'yellow'; 
+                        i = 0;
+                    }
+                    ctx.fillRect(obj.x * GRID, obj.y * GRID, GRID - 2, GRID - 2);                    
+                    
+                    if (this.x === obj.x && this.y === obj.y){                                               
+                        clearInterval(timerId)
+                        p.remove();                                  
+                        S = score;
+                        START = false;
+                        draw(ctx);
+                    }
+                });
+                if (this.body.length > this.tail) { this.body.shift(); }
+            }
+        };
+        const item = {
+            x: null,
+            y: null,
+            update: function () {
+                ctx.fillStyle = 'red';
+                ctx.fillRect(this.x * GRID, this.y * GRID, GRID, GRID);
+            }
+        };
+
+        const init = () => {
+            snake.x = STAGE / 2,
+            snake.y = STAGE / 2;
+            snake.tail = 4;
+            snake.body = [];
+            score = 0;
+            p.textContent = "score :" + score;
+            item.x = Math.floor(Math.random() * STAGE);
+            item.y = Math.floor(Math.random() * STAGE);
+        };
+        const loop = () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            snake.update();
+            item.update();
+
+            if (snake.x < 0) snake.x = STAGE - 1;
+            if (snake.y < 0) snake.y = STAGE - 1;
+            if (snake.x > STAGE - 1) snake.x = 0;
+            if (snake.y > STAGE - 1) snake.y = 0;
+
+            if (snake.x === item.x && snake.y === item.y) {
+                snake.tail++;
+                score++;
+                p.textContent = "score :" + score;
+                item.x = Math.floor(Math.random() * STAGE);
+                item.y = Math.floor(Math.random() * STAGE);
+            }
+        };
+
+        init();
+        var timerId = setInterval(loop, 1000 / 10); //10フレーム
+        document.addEventListener('keydown', e => {
+            switch (e.key) {
+                case 'ArrowLeft':
+                    snake.dx = -1; snake.dy = 0;
+                    break;
+                case 'ArrowRight':
+                    snake.dx = 1; snake.dy = 0;
+                    break;
+                case 'ArrowUp':
+                    snake.dx = 0; snake.dy = -1;
+                    break;
+                case 'ArrowDown':
+                    snake.dx = 0; snake.dy = 1;
+                    break;
+            }
+        });        　　　　
+    }
+    function draw(ctx){
+        if(!START){          
+            ctx.textAlign = 'center';
+            ctx.fillStyle = 'black';
+            ctx.font = "48px consolas";
+            ctx.fillText('スネークゲーム',canvas.width/2,canvas.height/4);
+            ctx.font = "32px consolas";
+            ctx.fillText('> '+'スタート',canvas.width/2,canvas.height/4*3);
+
+            if(S){
+                ctx.fillText('GameOver 前回スコア :' + S,canvas.width/2,canvas.height/8)
+            }
+        }else if(START){
+            S = null;
+            snekeGame();
+        }
+    }
+</script>
+</body>
+</html>
